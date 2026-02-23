@@ -104,6 +104,18 @@ nav button:hover{
     <button onclick="navigate('oils')">الزيوت</button>
     <button onclick="navigate('sales')">المبيعات</button>
     <button onclick="navigate('reports')">التقارير</button>
+
+    <!-- زر الإدارة -->
+    <button onclick="goToManager()" style="
+      background:linear-gradient(45deg,gold,#d4af37);
+      color:black;
+      padding:6px 12px;
+      border-radius:20px;
+      font-weight:bold;
+      box-shadow:0 0 10px gold;
+    ">
+      ⚙ الإدارة
+    </button>
   </nav>
 </header>
 
@@ -144,6 +156,11 @@ function navigate(sectionId){
     sec.classList.remove('active');
   });
   document.getElementById(sectionId).classList.add('active');
+}
+
+// الانتقال إلى صفحة الإدارة
+function goToManager(){
+  window.location.href = "manager.html";
 }
 
 // Particles Effect
