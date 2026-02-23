@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة الإدارة - نظام العطور</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Cairo', sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
+}
+
+header {
+  background: #111827;
+  padding: 15px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.container {
+  padding: 20px;
+  max-width: 900px;
+  margin: auto;
+}
+
+.card {
+  background: #1f2937;
+  padding: 20px;
+  border-radius: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.3);
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+  border-radius: 8px;
+  border: none;
+  background: #374151;
+  color: white;
+}
+
+button {
+  margin-top: 10px;
+  padding: 10px;
+  width: 100%;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-primary { background: #10b981; }
+.btn-danger { background: #ef4444; }
+
+.product {
+  background: #374151;
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+لوحة إدارة مخزون العطور
+<button onclick="logout()" style="float:left;background:#ef4444;padding:5px 10px;border:none;border-radius:6px;color:white;cursor:pointer;">تسجيل خروج</button>
+</header>
+
+<div class="container">
+
+<div class="card">
+<h3>إضافة عطر جديد</h3>
+
+<input type="text" id="barcode" placeholder="الباركود (EAN-13)">
+<input type="text" id="name" placeholder="اسم العطر">
+<input type="text" id="brand" placeholder="الماركة">
+<input type="text" id="category" placeholder="التصنيف (رجالي / نسائي)">
+<input type="number" id="cost" placeholder="سعر الشراء">
+<input type="number" id="price" placeholder="سعر البيع">
+<input type="number" id="quantity" placeholder="الكمية">
+<input type="number" id="minStock" placeholder="الحد الأدنى للتنبيه">
+
+<button class="btn-primary" onclick="addPerfume()">إضافة المنتج</button>
+</div>
+
+<div class="card">
+<h3>المخزون الحالي</h3>
+<div id="inventory"></div>
+</div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBuOxaFESRfCogj9ch38uXJS0l9FSjlqkg",
+  authDomain: "perfume-adbcb.firebaseapp.com",
+  projectId: "perfume-adbcb",
+  storageBucket: "perfume-adbcb.firebasestorage.app",
+  messagingSenderId: "235693642562",
+  appId: "1:235693642562:web:5e6453cbc42fa4242feedb",
+  measurementId: "G-E4FG0XKDPB"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* ===== التحقق من الأدمن ===== */
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  const userRef = doc(db, "users", user.uid);
+  const userSnap = await getDoc(userRef);
+
+  if (!userSnap.exists() || userSnap.data().role !== "admin") {
+    alert("ليس لديك صلاحية دخول لوحة الإدارة");
+    window.location.href = "index.html";
+  } else {
+    loadInventory();
+  }
+});
+
+/* ===== إضافة منتج ===== */
+window.addPerfume = async function () {
+
+  const barcode = document.getElementById("barcode").value.trim();
+  const name = document.getElementById("name").value.trim();
+  const brand = document.getElementById("brand").value.trim();
+  const category = document.getElementById("category").value.trim();
+  const cost = Number(document.getElementById("cost").value);
+  const price = Number(document.getElementById("price").value);
+  const quantity = Number(document.getElementById("quantity").value);
+  const minStock = Number(document.getElementById("minStock").value);
+
+  if (!barcode || !name || !brand || !category) {
+    alert("يرجى ملء جميع الحقول");
+    return;
+  }
+
+  await addDoc(collection(db, "perfumes"), {
+    barcode,
+    name,
+    brand,
+    category,
+    cost,
+    price,
+    quantity,
+    minStock,
+    createdAt: new Date()
+  });
+
+  alert("تمت إضافة المنتج بنجاح ✅");
+  loadInventory();
+};
+
+/* ===== عرض المخزون ===== */
+async function loadInventory() {
+
+  const inventoryDiv = document.getElementById("inventory");
+  inventoryDiv.innerHTML = "";
+
+  const querySnapshot = await getDocs(collection(db, "perfumes"));
+
+  querySnapshot.forEach((docSnap) => {
+    const data = docSnap.data();
+
+    inventoryDiv.innerHTML += `
+      <div class="product">
+        <strong>${data.name}</strong><br>
+        الباركود: ${data.barcode}<br>
+        السعر: ${data.price} | الكمية: ${data.quantity}
+        <button class="btn-danger" onclick="deletePerfume('${docSnap.id}')">حذف</button>
+      </div>
+    `;
+  });
+}
+
+/* ===== حذف منتج ===== */
+window.deletePerfume = async function(id) {
+  await deleteDoc(doc(db, "perfumes", id));
+  loadInventory();
+};
+
+/* ===== تسجيل خروج ===== */
+window.logout = function() {
+  signOut(auth).then(() => {
+    window.location.href = "login.html";
+  });
+};
+</script>
+
+</body>
+</html>
