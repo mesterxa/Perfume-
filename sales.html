@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل مبيعات - عطور النخبة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #d4af37; --bg: #0f172a; --card: #1f2937; }
+        body { margin: 0; font-family: 'Cairo', sans-serif; background: var(--bg); color: white; }
+        header { background: #111827; padding: 15px 5%; display: flex; justify-content: space-between; border-bottom: 1px solid var(--gold); }
+        .container { padding: 20px; max-width: 800px; margin: auto; }
+        .card { background: var(--card); padding: 25px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #374151; background: #111827; color: white; font-family: inherit; }
+        .search-box { position: relative; }
+        #results { background: #374151; border-radius: 8px; position: absolute; width: 100%; z-index: 10; max-height: 200px; overflow-y: auto; }
+        .result-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #4b5563; }
+        .result-item:hover { background: var(--gold); color: black; }
+        .btn-sale { width: 100%; padding: 15px; border-radius: 10px; border: none; background: linear-gradient(45deg, #10b981, #059669); color: white; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
+        .summary { margin-top: 15px; padding: 10px; background: rgba(212, 175, 55, 0.1); border-radius: 8px; border: 1px dashed var(--gold); }
+    </style>
+</head>
+<body>
+
+<header>
+    <span style="color:var(--gold); font-weight: bold;">💰 تسجيل عملية بيع</span>
+    <button onclick="location.href='index.html'" style="background:none; border:1px solid white; color:white; padding:5px 15px; border-radius:8px; cursor:pointer;">الرئيسية</button>
+</header>
+
+<div class="container">
+    <div class="card">
+        <h3>🔍 ابحث عن العطر</h3>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="ادخل اسم العطر أو الباركود...">
+            <div id="results"></div>
+        </div>
+
+        <div id="saleDetails" style="display: none; margin-top: 20px;">
+            <h4 id="selectedName" style="color: var(--gold);"></h4>
+            <p>الكمية المتوفرة: <span id="availableQty">0</span></p>
+            
+            <input type="number" id="qtyToSell" placeholder="الكمية المباعة" min="1">
+            <input type="number" id="finalPrice" placeholder="سعر البيع النهائي للقطعة">
+            
+            <div class="summary">
+                <p>إجمالي البيع: <span id="totalDisplay">0</span> ريال</p>
+                <p>صافي الربح: <span id="profitDisplay">0</span> ريال</p>
+            </div>
+            
+            <button class="btn-sale" id="confirmSale">إتمام العملية وتحديث المخزون</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { db } from "./firebase-config.js";
+    import { collection, query, where, getDocs, doc, updateDoc, addDoc, getDoc, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let selectedProduct = null;
+
+    // البحث اللحظي
+    document.getElementById("searchInput").addEventListener("input", async (e) => {
+        const term = e.target.value.trim();
+        const resultsDiv = document.getElementById("results");
+        if (term.length < 2) { resultsDiv.innerHTML = ""; return; }
+
+        const q = query(collection(db, "perfumes"), limit(5));
+        const snap = await getDocs(q);
+        resultsDiv.innerHTML = "";
+
+        snap.forEach(s => {
+            const p = s.data();
+            if (p.name.includes(term) || p.barcode.includes(term)) {
+                const div = document.createElement("div");
+                div.className = "result-item";
+                div.innerText = `${p.name} (${p.brand}) - ${p.price} ريال`;
+                div.onclick = () => selectProduct(s.id, p);
+                resultsDiv.appendChild(div);
+            }
+        });
+    });
+
+    function selectProduct(id, data) {
+        selectedProduct = { id, ...data };
+        document.getElementById("results").innerHTML = "";
+        document.getElementById("searchInput").value = data.name;
+        document.getElementById("selectedName").innerText = data.name;
+        document.getElementById("availableQty").innerText = data.quantity;
+        document.getElementById("finalPrice").value = data.price;
+        document.getElementById("saleDetails").style.display = "block";
+    }
+
+    // حساب الأرباح لحظياً
+    document.getElementById("qtyToSell").oninput = calculate;
+    document.getElementById("finalPrice").oninput = calculate;
+
+    function calculate() {
+        if (!selectedProduct) return;
+        const qty = Number(document.getElementById("qtyToSell").value);
+        const price = Number(document.getElementById("finalPrice").value);
+        const total = qty * price;
+        const profit = (price - selectedProduct.cost) * qty;
+
+        document.getElementById("totalDisplay").innerText = total;
+        document.getElementById("profitDisplay").innerText = profit;
+    }
+
+    // إتمام البيع
+    document.getElementById("confirmSale").onclick = async () => {
+        const qty = Number(document.getElementById("qtyToSell").value);
+        const price = Number(document.getElementById("finalPrice").value);
+
+        if (qty > selectedProduct.quantity) return alert("الكمية غير كافية في المخزون!");
+        if (qty <= 0) return alert("ادخل كمية صحيحة");
+
+        try {
+            // 1. تسجيل عملية البيع
+            await addDoc(collection(db, "sales"), {
+                barcode: selectedProduct.barcode,
+                name: selectedProduct.name,
+                quantitySold: qty,
+                salePrice: price,
+                totalSale: qty * price,
+                profit: (price - selectedProduct.cost) * qty,
+                date: new Date()
+            });
+
+            // 2. تحديث المخزون
+            const perfRef = doc(db, "perfumes", selectedProduct.id);
+            await updateDoc(perfRef, {
+                quantity: selectedProduct.quantity - qty
+            });
+
+            alert("تمت العملية بنجاح! تم خصم الكمية من المخزون.");
+            location.reload();
+        } catch (e) {
+            console.error(e);
+            alert("حدث خطأ في الصلاحيات أو الاتصال");
+        }
+    };
+</script>
+</body>
+</html>
