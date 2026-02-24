@@ -1,210 +1,107 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>لوحة الإدارة - نظام العطور</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-
-<style>
-body {
-  margin: 0;
-  font-family: 'Cairo', sans-serif;
-  background: linear-gradient(135deg, #0f172a, #1e293b);
-  color: white;
-}
-
-header {
-  background: #111827;
-  padding: 15px;
-  text-align: center;
-  font-size: 22px;
-  font-weight: bold;
-}
-
-.container {
-  padding: 20px;
-  max-width: 900px;
-  margin: auto;
-}
-
-.card {
-  background: #1f2937;
-  padding: 20px;
-  border-radius: 15px;
-  margin-bottom: 20px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.3);
-}
-
-input {
-  width: 100%;
-  padding: 10px;
-  margin-top: 8px;
-  border-radius: 8px;
-  border: none;
-  background: #374151;
-  color: white;
-}
-
-button {
-  margin-top: 10px;
-  padding: 10px;
-  width: 100%;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.btn-primary { background: #10b981; }
-.btn-danger { background: #ef4444; }
-
-.product {
-  background: #374151;
-  padding: 10px;
-  border-radius: 10px;
-  margin-bottom: 10px;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة المخزون الملكي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #d4af37; --danger: #ef4444; --success: #10b981; }
+        body { background: #0f172a; color: white; font-family: 'Cairo', sans-serif; margin: 0; }
+        header { background: #111827; padding: 15px 5%; display: flex; justify-content: space-between; border-bottom: 1px solid var(--gold); }
+        .container { padding: 20px; max-width: 900px; margin: auto; }
+        .card { background: #1f2937; padding: 25px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        input { padding: 12px; border-radius: 8px; border: 1px solid #374151; background: #111827; color: white; font-family: inherit; }
+        .btn-add { grid-column: span 2; background: var(--success); border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; font-family: inherit; transition: 0.3s; }
+        .btn-add:hover { filter: brightness(1.2); }
+        .product-item { background: #2d3748; padding: 15px; border-radius: 10px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; border-right: 4px solid var(--gold); }
+        .btn-del { background: var(--danger); border: none; color: white; padding: 5px 12px; border-radius: 5px; cursor: pointer; font-family: inherit; }
+        .low-stock { border-right-color: var(--danger); background: #451a1a; }
+    </style>
 </head>
-
 <body>
+    <header>
+        <span style="color:var(--gold); font-weight: bold;">⚙ لوحة إدارة المخزون</span>
+        <button onclick="location.href='index.html'" style="background:none; border:1px solid white; color:white; padding:5px 15px; border-radius:8px; cursor:pointer; font-family: inherit;">الرئيسية</button>
+    </header>
 
-<header>
-لوحة إدارة مخزون العطور
-<button onclick="logout()" style="float:left;background:#ef4444;padding:5px 10px;border:none;border-radius:6px;color:white;cursor:pointer;">تسجيل خروج</button>
-</header>
+    <div class="container">
+        <div class="card">
+            <h3 style="margin-top:0;">➕ إضافة عطر جديد</h3>
+            <div class="form-grid">
+                <input type="text" id="barcode" placeholder="الباركود (EAN-13)">
+                <input type="text" id="name" placeholder="اسم العطر">
+                <input type="text" id="brand" placeholder="الماركة">
+                <input type="text" id="category" placeholder="التصنيف">
+                <input type="number" id="cost" placeholder="سعر الشراء">
+                <input type="number" id="price" placeholder="سعر البيع">
+                <input type="number" id="quantity" placeholder="الكمية المتوفرة">
+                <input type="number" id="minStock" placeholder="الحد الأدنى للتنبيه">
+                <button class="btn-add" id="saveBtn">حفظ المنتج</button>
+            </div>
+        </div>
 
-<div class="container">
+        <div class="card">
+            <h3>📦 قائمة المخزون</h3>
+            <div id="inventoryList">جاري تحميل البيانات...</div>
+        </div>
+    </div>
 
-<div class="card">
-<h3>إضافة عطر جديد</h3>
+    <script type="module">
+        import { db } from "./firebase-config.js";
+        import { collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-<input type="text" id="barcode" placeholder="الباركود (EAN-13)">
-<input type="text" id="name" placeholder="اسم العطر">
-<input type="text" id="brand" placeholder="الماركة">
-<input type="text" id="category" placeholder="التصنيف (رجالي / نسائي)">
-<input type="number" id="cost" placeholder="سعر الشراء">
-<input type="number" id="price" placeholder="سعر البيع">
-<input type="number" id="quantity" placeholder="الكمية">
-<input type="number" id="minStock" placeholder="الحد الأدنى للتنبيه">
+        // إضافة المنتج
+        document.getElementById("saveBtn").addEventListener("click", async () => {
+            const data = {
+                barcode: document.getElementById("barcode").value,
+                name: document.getElementById("name").value,
+                brand: document.getElementById("brand").value,
+                category: document.getElementById("category").value,
+                cost: Number(document.getElementById("cost").value),
+                price: Number(document.getElementById("price").value),
+                quantity: Number(document.getElementById("quantity").value),
+                minStock: Number(document.getElementById("minStock").value),
+                createdAt: new Date()
+            };
 
-<button class="btn-primary" onclick="addPerfume()">إضافة المنتج</button>
-</div>
+            if(!data.name || !data.barcode) return alert("يرجى ملء الباركود والاسم على الأقل");
 
-<div class="card">
-<h3>المخزون الحالي</h3>
-<div id="inventory"></div>
-</div>
+            try {
+                await addDoc(collection(db, "perfumes"), data);
+                alert("تمت الإضافة بنجاح ✅");
+                // تفريغ الحقول
+                document.querySelectorAll("input").forEach(i => i.value = "");
+            } catch (e) {
+                alert("حدث خطأ أثناء الحفظ");
+            }
+        });
 
-</div>
+        // عرض المخزون لحظياً
+        onSnapshot(query(collection(db, "perfumes"), orderBy("createdAt", "desc")), (snap) => {
+            const list = document.getElementById("inventoryList");
+            list.innerHTML = "";
+            snap.forEach(s => {
+                const p = s.data();
+                const isLow = p.quantity <= p.minStock;
+                list.innerHTML += `
+                    <div class="product-item ${isLow ? 'low-stock' : ''}">
+                        <div>
+                            <strong>${p.name} - ${p.brand}</strong><br>
+                            <small>المخزون: ${p.quantity} | السعر: ${p.price} ريال</small>
+                        </div>
+                        <button class="btn-del" onclick="deleteItem('${s.id}')">حذف</button>
+                    </div>
+                `;
+            });
+        });
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBuOxaFESRfCogj9ch38uXJS0l9FSjlqkg",
-  authDomain: "perfume-adbcb.firebaseapp.com",
-  projectId: "perfume-adbcb",
-  storageBucket: "perfume-adbcb.firebasestorage.app",
-  messagingSenderId: "235693642562",
-  appId: "1:235693642562:web:5e6453cbc42fa4242feedb",
-  measurementId: "G-E4FG0XKDPB"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-/* ===== التحقق من الأدمن ===== */
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    window.location.href = "login.html";
-    return;
-  }
-
-  const userRef = doc(db, "users", user.uid);
-  const userSnap = await getDoc(userRef);
-
-  if (!userSnap.exists() || userSnap.data().role !== "admin") {
-    alert("ليس لديك صلاحية دخول لوحة الإدارة");
-    window.location.href = "index.html";
-  } else {
-    loadInventory();
-  }
-});
-
-/* ===== إضافة منتج ===== */
-window.addPerfume = async function () {
-
-  const barcode = document.getElementById("barcode").value.trim();
-  const name = document.getElementById("name").value.trim();
-  const brand = document.getElementById("brand").value.trim();
-  const category = document.getElementById("category").value.trim();
-  const cost = Number(document.getElementById("cost").value);
-  const price = Number(document.getElementById("price").value);
-  const quantity = Number(document.getElementById("quantity").value);
-  const minStock = Number(document.getElementById("minStock").value);
-
-  if (!barcode || !name || !brand || !category) {
-    alert("يرجى ملء جميع الحقول");
-    return;
-  }
-
-  await addDoc(collection(db, "perfumes"), {
-    barcode,
-    name,
-    brand,
-    category,
-    cost,
-    price,
-    quantity,
-    minStock,
-    createdAt: new Date()
-  });
-
-  alert("تمت إضافة المنتج بنجاح ✅");
-  loadInventory();
-};
-
-/* ===== عرض المخزون ===== */
-async function loadInventory() {
-
-  const inventoryDiv = document.getElementById("inventory");
-  inventoryDiv.innerHTML = "";
-
-  const querySnapshot = await getDocs(collection(db, "perfumes"));
-
-  querySnapshot.forEach((docSnap) => {
-    const data = docSnap.data();
-
-    inventoryDiv.innerHTML += `
-      <div class="product">
-        <strong>${data.name}</strong><br>
-        الباركود: ${data.barcode}<br>
-        السعر: ${data.price} | الكمية: ${data.quantity}
-        <button class="btn-danger" onclick="deletePerfume('${docSnap.id}')">حذف</button>
-      </div>
-    `;
-  });
-}
-
-/* ===== حذف منتج ===== */
-window.deletePerfume = async function(id) {
-  await deleteDoc(doc(db, "perfumes", id));
-  loadInventory();
-};
-
-/* ===== تسجيل خروج ===== */
-window.logout = function() {
-  signOut(auth).then(() => {
-    window.location.href = "login.html";
-  });
-};
-</script>
-
+        window.deleteItem = async (id) => {
+            if(confirm("هل أنت متأكد من حذف هذا العطر؟")) {
+                await deleteDoc(doc(db, "perfumes", id));
+            }
+        };
+    </script>
 </body>
 </html>
