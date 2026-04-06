@@ -1,0 +1,25 @@
+"use strict";
+/*
+ * ATTENTION: An "eval-source-map" devtool has been used.
+ * This devtool is neither made for production nor for readable output files.
+ * It uses "eval()" calls to create a separate source file with attached SourceMaps in the browser devtools.
+ * If you are trying to read the output file, select a different devtool (https://webpack.js.org/configuration/devtool/)
+ * or disable the default devtool with "devtool: false".
+ * If you are looking for production-ready output files, see mode: "production" (https://webpack.js.org/configuration/mode/).
+ */
+exports.id = "_pages-dir-node_lib_firebase-admin_js";
+exports.ids = ["_pages-dir-node_lib_firebase-admin_js"];
+exports.modules = {
+
+/***/ "(pages-dir-node)/./lib/firebase-admin.js":
+/*!*******************************!*\
+  !*** ./lib/firebase-admin.js ***!
+  \*******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   adminDb: () => (/* binding */ adminDb),\n/* harmony export */   \"default\": () => (__WEBPACK_DEFAULT_EXPORT__)\n/* harmony export */ });\n/* harmony import */ var firebase_admin__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! firebase-admin */ \"firebase-admin\");\n/* harmony import */ var firebase_admin__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(firebase_admin__WEBPACK_IMPORTED_MODULE_0__);\n\nif (!(firebase_admin__WEBPACK_IMPORTED_MODULE_0___default().apps).length) {\n    const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY || process.env.FIREBASE_SERVICE_ACCOUNT;\n    if (!serviceAccountKey) {\n        throw new Error('Firebase service account not found. Set FIREBASE_SERVICE_ACCOUNT_KEY or FIREBASE_SERVICE_ACCOUNT in your environment variables.');\n    }\n    let serviceAccount;\n    try {\n        serviceAccount = JSON.parse(serviceAccountKey);\n    } catch  {\n        throw new Error('Firebase service account key is not valid JSON.');\n    }\n    firebase_admin__WEBPACK_IMPORTED_MODULE_0___default().initializeApp({\n        credential: firebase_admin__WEBPACK_IMPORTED_MODULE_0___default().credential.cert(serviceAccount),\n        projectId: 'perfume-adbcb'\n    });\n}\nconst adminDb = firebase_admin__WEBPACK_IMPORTED_MODULE_0___default().firestore();\n/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((firebase_admin__WEBPACK_IMPORTED_MODULE_0___default()));\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKHBhZ2VzLWRpci1ub2RlKS8uL2xpYi9maXJlYmFzZS1hZG1pbi5qcyIsIm1hcHBpbmdzIjoiOzs7Ozs7O0FBQW1DO0FBRW5DLElBQUksQ0FBQ0EsNERBQVUsQ0FBQ0UsTUFBTSxFQUFFO0lBQ3RCLE1BQU1DLG9CQUNKQyxRQUFRQyxHQUFHLENBQUNDLDRCQUE0QixJQUN4Q0YsUUFBUUMsR0FBRyxDQUFDRSx3QkFBd0I7SUFFdEMsSUFBSSxDQUFDSixtQkFBbUI7UUFDdEIsTUFBTSxJQUFJSyxNQUNSO0lBRUo7SUFFQSxJQUFJQztJQUNKLElBQUk7UUFDRkEsaUJBQWlCQyxLQUFLQyxLQUFLLENBQUNSO0lBQzlCLEVBQUUsT0FBTTtRQUNOLE1BQU0sSUFBSUssTUFBTTtJQUNsQjtJQUVBUixtRUFBbUIsQ0FBQztRQUNsQmEsWUFBWWIsZ0VBQWdCLENBQUNjLElBQUksQ0FBQ0w7UUFDbENNLFdBQVc7SUFDYjtBQUNGO0FBRU8sTUFBTUMsVUFBVWhCLCtEQUFlLEdBQUc7QUFDekMsaUVBQWVBLHVEQUFLQSxFQUFDIiwic291cmNlcyI6WyIvaG9tZS9ydW5uZXIvd29ya3NwYWNlL3N0b3JlZnJvbnQvbGliL2ZpcmViYXNlLWFkbWluLmpzIl0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCBhZG1pbiBmcm9tICdmaXJlYmFzZS1hZG1pbic7XG5cbmlmICghYWRtaW4uYXBwcy5sZW5ndGgpIHtcbiAgY29uc3Qgc2VydmljZUFjY291bnRLZXkgPVxuICAgIHByb2Nlc3MuZW52LkZJUkVCQVNFX1NFUlZJQ0VfQUNDT1VOVF9LRVkgfHxcbiAgICBwcm9jZXNzLmVudi5GSVJFQkFTRV9TRVJWSUNFX0FDQ09VTlQ7XG5cbiAgaWYgKCFzZXJ2aWNlQWNjb3VudEtleSkge1xuICAgIHRocm93IG5ldyBFcnJvcihcbiAgICAgICdGaXJlYmFzZSBzZXJ2aWNlIGFjY291bnQgbm90IGZvdW5kLiBTZXQgRklSRUJBU0VfU0VSVklDRV9BQ0NPVU5UX0tFWSBvciBGSVJFQkFTRV9TRVJWSUNFX0FDQ09VTlQgaW4geW91ciBlbnZpcm9ubWVudCB2YXJpYWJsZXMuJ1xuICAgICk7XG4gIH1cblxuICBsZXQgc2VydmljZUFjY291bnQ7XG4gIHRyeSB7XG4gICAgc2VydmljZUFjY291bnQgPSBKU09OLnBhcnNlKHNlcnZpY2VBY2NvdW50S2V5KTtcbiAgfSBjYXRjaCB7XG4gICAgdGhyb3cgbmV3IEVycm9yKCdGaXJlYmFzZSBzZXJ2aWNlIGFjY291bnQga2V5IGlzIG5vdCB2YWxpZCBKU09OLicpO1xuICB9XG5cbiAgYWRtaW4uaW5pdGlhbGl6ZUFwcCh7XG4gICAgY3JlZGVudGlhbDogYWRtaW4uY3JlZGVudGlhbC5jZXJ0KHNlcnZpY2VBY2NvdW50KSxcbiAgICBwcm9qZWN0SWQ6ICdwZXJmdW1lLWFkYmNiJyxcbiAgfSk7XG59XG5cbmV4cG9ydCBjb25zdCBhZG1pbkRiID0gYWRtaW4uZmlyZXN0b3JlKCk7XG5leHBvcnQgZGVmYXVsdCBhZG1pbjtcbiJdLCJuYW1lcyI6WyJhZG1pbiIsImFwcHMiLCJsZW5ndGgiLCJzZXJ2aWNlQWNjb3VudEtleSIsInByb2Nlc3MiLCJlbnYiLCJGSVJFQkFTRV9TRVJWSUNFX0FDQ09VTlRfS0VZIiwiRklSRUJBU0VfU0VSVklDRV9BQ0NPVU5UIiwiRXJyb3IiLCJzZXJ2aWNlQWNjb3VudCIsIkpTT04iLCJwYXJzZSIsImluaXRpYWxpemVBcHAiLCJjcmVkZW50aWFsIiwiY2VydCIsInByb2plY3RJZCIsImFkbWluRGIiLCJmaXJlc3RvcmUiXSwiaWdub3JlTGlzdCI6W10sInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///(pages-dir-node)/./lib/firebase-admin.js\n");
+
+/***/ })
+
+};
+;

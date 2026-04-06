@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم عطور النخبة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
+    <style>
+        :root { --gold: #d4af37; --dark: #0f0f0f; --card-bg: rgba(31, 41, 55, 0.7); }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Cairo', sans-serif; }
+        body { background: var(--dark); color: white; overflow-x: hidden; }
+        #particles { position: fixed; width: 100%; height: 100%; z-index: -1; }
+        
+        header { 
+            padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; 
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid var(--gold);
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        nav { display: flex; gap: 10px; flex-wrap: wrap; }
+        nav button { 
+            background: none; border: 1px solid rgba(212, 175, 55, 0.3); color: white; 
+            padding: 8px 15px; border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 0.9rem;
+        }
+        nav button:hover { background: var(--gold); color: black; border-color: var(--gold); }
+        .active-btn { background: var(--gold); color: black; }
+
+        .dashboard-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px; padding: 40px 5%; max-width: 1200px; margin: auto;
+        }
+
+        .stat-card {
+            background: var(--card-bg); padding: 30px; border-radius: 15px; border: 1px solid rgba(212,175,55,0.1);
+            text-align: center; cursor: pointer; transition: 0.4s; backdrop-filter: blur(10px);
+        }
+        .stat-card:hover { transform: translateY(-10px); border-color: var(--gold); box-shadow: 0 10px 20px rgba(212,175,55,0.1); }
+        .stat-card h3 { color: var(--gold); margin-bottom: 10px; }
+        .stat-card i { font-size: 2.5rem; display: block; margin-bottom: 15px; }
+
+        .logout-btn { color: #ff4d4d !important; border-color: #ff4d4d !important; }
+        .logout-btn:hover { background: #ff4d4d !important; color: white !important; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .container { animation: fadeIn 1s ease; }
+    </style>
+</head>
+<body>
+    <div id="particles"></div>
+
+    <header>
+        <h1 style="color:var(--gold); font-size: 1.4rem;">💎 عطور النخبة</h1>
+        <nav id="mainNav">
+            <button onclick="location.href='index.html'" class="active-btn">🏠 الرئيسية</button>
+            <button onclick="location.href='sales.html'">💰 المبيعات</button>
+            <button onclick="location.href='manage.html'">📦 المخزون</button>
+            <button onclick="location.href='expenses.html'">📉 المصاريف</button>
+            <button onclick="location.href='reports.html'">📊 التقارير</button>
+            <button id="logoutBtn" class="logout-btn">خروج</button>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div style="text-align: center; margin-top: 40px;">
+            <h2 style="font-size: 2rem;">مرحباً بك في لوحة الإدارة</h2>
+            <p style="color: #aaa;">اختر القسم الذي تود العمل عليه الآن</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="stat-card" onclick="location.href='sales.html'">
+                <i>💸</i>
+                <h3>تسجيل بيع</h3>
+                <p>إتمام عملية بيع جديدة وخصمها من المخزون</p>
+            </div>
+
+            <div class="stat-card" onclick="location.href='manage.html'">
+                <i>📦</i>
+                <h3>إدارة المخزون</h3>
+                <p>إضافة عطور جديدة وتعديل الكميات</p>
+            </div>
+
+            <div class="stat-card" onclick="location.href='expenses.html'">
+                <i>📉</i>
+                <h3>المصاريف</h3>
+                <p>تسجيل الإيجار، الرواتب، والمصاريف الجانبية</p>
+            </div>
+
+            <div class="stat-card" onclick="location.href='reports.html'">
+                <i>📊</i>
+                <h3>التقارير المالية</h3>
+                <p>عرض الأرباح والمبيعات اليومية والشهرية</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth } from "./firebase-config.js";
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // حماية الصفحة من الدخول غير المصرح
+        onAuthStateChanged(auth, (user) => {
+            if (!user) window.location.href = "login.html";
+        });
+
+        // خروج
+        document.getElementById("logoutBtn").onclick = () => {
+            if(confirm("هل تريد تسجيل الخروج؟")) signOut(auth);
+        };
+
+        // خلفية الجزيئات
+        tsParticles.load("particles", {
+            particles: {
+                number: { value: 40 },
+                color: { value: "#d4af37" },
+                move: { enable: true, speed: 0.5 },
+                size: { value: 1.5 },
+                opacity: { value: 0.3 }
+            }
+        });
+    </script>
+</body>
+</html>

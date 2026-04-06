@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل المصاريف - عطور النخبة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #d4af37; --bg: #0f172a; --danger: #ef4444; }
+        body { margin: 0; font-family: 'Cairo', sans-serif; background: var(--bg); color: white; }
+        header {
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(14px);
+            padding: 12px 4%; display: flex; align-items: center; gap: 12px;
+            border-bottom: 1px solid rgba(212,175,55,0.25); position: sticky; top: 0; z-index: 100;
+        }
+        .logo { color: var(--gold); font-weight: 700; font-size: 1.1rem; white-space: nowrap; }
+        nav {
+            display: flex; gap: 4px; background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 5px;
+            flex-wrap: wrap; margin-right: auto;
+        }
+        nav a {
+            text-decoration: none; color: rgba(255,255,255,0.6); font-size: 0.8rem; font-weight: 600;
+            padding: 6px 12px; border-radius: 9px; transition: all 0.25s; white-space: nowrap;
+            display: flex; align-items: center; gap: 4px;
+        }
+        nav a:hover { color: white; background: rgba(255,255,255,0.08); }
+        nav a.active { background: linear-gradient(135deg, #d4af37, #b8860b); color: #000; box-shadow: 0 3px 10px rgba(212,175,55,0.3); }
+        .container { padding: 20px; max-width: 600px; margin: auto; }
+        .card { background: #1f2937; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #374151; background: #111827; color: white; font-family: inherit; }
+        .btn-save { width: 100%; padding: 15px; border-radius: 10px; border: none; background: var(--danger); color: white; font-weight: bold; cursor: pointer; font-size: 1.1rem; transition: 0.3s; }
+        .btn-save:hover { filter: brightness(1.2); }
+        .expense-item { background: #2d3748; padding: 15px; border-radius: 10px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; border-right: 4px solid var(--danger); }
+    </style>
+</head>
+<body>
+
+<header>
+    <span class="logo">📉 إدارة المصاريف</span>
+    <nav>
+        <a href="index.html">🏠 الرئيسية</a>
+        <a href="sales.html">💰 المبيعات</a>
+        <a href="manage.html">📦 المخزون</a>
+        <a href="expenses.html" class="active">📉 المصاريف</a>
+        <a href="reports.html">📊 التقارير</a>
+    </nav>
+</header>
+
+<div class="container">
+    <div class="card">
+        <h3>➕ إضافة مصروف جديد</h3>
+        <select id="expType">
+            <option value="إيجار">إيجار</option>
+            <option value="كهرباء/ماء">كهرباء/ماء</option>
+            <option value="رواتب">رواتب</option>
+            <option value="دعاية وإعلان">دعاية وإعلان</option>
+            <option value="أخرى">أخرى</option>
+        </select>
+        <input type="number" id="expAmount" placeholder="المبلغ (ريال)">
+        <textarea id="expNote" placeholder="ملاحظات إضافية..." rows="2"></textarea>
+        <button class="btn-save" id="saveExp">حفظ المصروف</button>
+    </div>
+
+    <h3 style="margin-top: 30px; color: var(--gold);">📋 آخر المصاريف المسجلة</h3>
+    <div id="expensesList">جاري التحميل...</div>
+</div>
+
+<script type="module">
+    import { db } from "./firebase-config.js";
+    import { collection, addDoc, onSnapshot, query, orderBy, limit, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // إضافة مصروف
+    document.getElementById("saveExp").onclick = async () => {
+        const amount = Number(document.getElementById("expAmount").value);
+        const type = document.getElementById("expType").value;
+        const note = document.getElementById("expNote").value;
+
+        if (!amount || amount <= 0) return alert("يرجى إدخال مبلغ صحيح");
+
+        try {
+            await addDoc(collection(db, "expenses"), {
+                type: type,
+                amount: amount,
+                note: note,
+                date: new Date()
+            });
+            document.getElementById("expAmount").value = "";
+            document.getElementById("expNote").value = "";
+            alert("تم تسجيل المصروف بنجاح");
+        } catch (e) {
+            alert("حدث خطأ في الصلاحيات");
+        }
+    };
+
+    // عرض المصاريف لحظياً
+    const q = query(collection(db, "expenses"), orderBy("date", "desc"), limit(10));
+    onSnapshot(q, (snap) => {
+        const list = document.getElementById("expensesList");
+        list.innerHTML = "";
+        snap.forEach(s => {
+            const exp = s.data();
+            list.innerHTML += `
+                <div class="expense-item">
+                    <div>
+                        <strong>${exp.type}</strong> - <span style="color:var(--danger)">${exp.amount} ريال</span><br>
+                        <small style="color:#aaa">${exp.note || ''}</small>
+                    </div>
+                    <button onclick="deleteExp('${s.id}')" style="background:none; border:none; color:#ff4d4d; cursor:pointer;">🗑️</button>
+                </div>
+            `;
+        });
+    });
+
+    window.deleteExp = async (id) => {
+        if(confirm("هل تريد حذف هذا المصروف؟")) {
+            await deleteDoc(doc(db, "expenses", id));
+        }
+    };
+</script>
+</body>
+</html>

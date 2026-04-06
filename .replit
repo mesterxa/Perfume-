@@ -1,0 +1,58 @@
+modules = ["web", "nodejs-20"]
+[agent]
+expertMode = true
+
+[nix]
+channel = "stable-25_05"
+packages = ["gh"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd storefront && npm run dev"
+waitForPort = 5000
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["sh", "-c", "cd storefront && npm run start"]
+build = ["sh", "-c", "cd storefront && npm run build"]
+
+[userenv]
+
+[userenv.shared]
+FIREBASE_SERVICE_ACCOUNT_KEY = '''
+{
+    "type": "service_account",
+    "project_id": "perfume-adbcb",
+    "private_key_id": "c76d49fdc29660197c13cca921dcb79d612b0554",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC6OioUOC5vWRye\nnjj4/3MEXB7dIse4Wt4p0ZkNqa8D2nuQgOjsFnMUboOVdwhMg+pU9ekrpgfY/m91\nZvctdPdnE2aUV1D93LWAQ1tOOOhII0Uomb7MR689NgqQXUxeHWV5/UJRewpi++9I\nP/c88Cg33vkbwAUqr95GkXpt9GzKs3eY2x61s/CAsxb54825thGE38flLE00E9mr\ndvnUcwWq/fhjI6eJGvPZUPHZplMnxlBZBjlRpwDSYwVcY0RxesSRfU/0GHZVnfv1\n6fDhvHmTnkHac659eNC8RMRJGyPsfmxwRaqUCq0s6MUmkwHfCi4uP0KcKjbLzwhQ\ntKSxZVhfAgMBAAECggEAAegKz9qnYbS3ZxjczFoKojIT/RfVJricXtsIxoEshbrc\ntaHyTKsWWyvnaEYn6jZTHstAhusN3l6S6T4NmgQltfDBbVzDFq9bNUKBW8f5Qw7W\ntWgfa/QI3UQTpZu9YHI5c2JMAROIqh2B2YmLbrsULY9jH6WmNBTz9nl0BYsXdH9e\nmfbyceCvYNFcToohtiWwaQwPohOHi6lCC4W0vOVLqfTmbQocELLUTKHwK5B+RQ3g\nfSut/pEZLsYAKScx5wJk5Eaec4MbtLmx18VoSTz3W4NWPQnhWdCiFHp8DNip2lPB\nl7519phaZUkUfxtdACIsdVymStYbDLzIYr21bSWLaQKBgQDhTM+IFFENqUXxKVPd\nBA6aZ6whTwmlIH3Jbjde9CGW8XPOdwJQD1a1A5UlcvAnCmhvPwpDG9DZVIsmzymw\n/E8nHMA7sBWiuLFY7Qvq9RFGjzvnpLrTjFJOEoQk1N0MnzTdpVPTfm5geMZ5AVE5\nUyqnqP7hYAly1gZ0kyagbm/LhQKBgQDTml4bSQeOTbR9q100QDZvCcLvj2L/BVfQ\nvtxVLpUjo92QetpK5wJ/U4/+H3xTwMm/mH5XugHuVzdTCWQ8lKe8tR7ibeXe9c4z\n9tHTyGVFZ3lS0RGBIkntiLQVZdV0X41c+qOjZ7ppQn9pfePkryXRcy931bt961hU\nQPZElbL/kwKBgBWJmzk9//WXXflM4xh4v9Cg4oKYpKplbcDoyWBJZECiulhdZhoz\nLS3GtuZKk4yX4R3pX9jEevWbsGW4XhruM77gb7wE/Dx+/W0r0/zVCp69KJPfWoDI\npEGUYY+Hzc3cFlit6lKIfpK4WPjOWG5rdeNrM1pmLOEOdrWEL6gchpFlAoGBAL2H\n/hS4dAEdTrZlYIVlopwQhT9oEkbUNVTvL5FIuSMEKne34oDGq/D6GvaGoyitfMeV\nQk03eXVPP2mr9tFgYWHgZTpxLz1ms/zNbiIg07y3su7f/qrI2KjfElY8MVYcJBWN\nFjdNuKWBf3gw34g87UXOw0y170sZGrPUwACsiXjrAoGAc2V9K0nhOJxRGcAVZP3U\n2K7UBRe6QCNWr2nO/kiuUep5FYbXZM9mO5exdXumV5wcF1T2Fh+hOezGKDJ7dRn4\nKcZrY+5Ll520Umy1ZMFR/fQ4IA+sWsPWHV6yzv3Qmr/pnAl/6u7INhmSYIed4RRn\nbZ7l+ip3T04HQ0QDOUphzIE=\n-----END PRIVATE KEY-----\n",
+    "client_email": "firebase-adminsdk-fbsvc@perfume-adbcb.iam.gserviceaccount.com",
+    "client_id": "108160049408190447829",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40perfume-adbcb.iam.gserviceaccount.com",
+    "universe_domain": "googleapis.com"
+  }'''

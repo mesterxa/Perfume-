@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة المخزون الملكي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #d4af37; --danger: #ef4444; --success: #10b981; }
+        body { background: #0f172a; color: white; font-family: 'Cairo', sans-serif; margin: 0; }
+        header { background: #111827; padding: 15px 5%; display: flex; justify-content: space-between; border-bottom: 1px solid var(--gold); }
+        .container { padding: 20px; max-width: 900px; margin: auto; }
+        .card { background: #1f2937; padding: 25px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        input { padding: 12px; border-radius: 8px; border: 1px solid #374151; background: #111827; color: white; font-family: inherit; }
+        .btn-add { grid-column: span 2; background: var(--success); border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; font-family: inherit; transition: 0.3s; }
+        .btn-add:hover { filter: brightness(1.2); }
+        .product-item { background: #2d3748; padding: 15px; border-radius: 10px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; border-right: 4px solid var(--gold); }
+        .btn-del { background: var(--danger); border: none; color: white; padding: 5px 12px; border-radius: 5px; cursor: pointer; font-family: inherit; }
+        .low-stock { border-right-color: var(--danger); background: #451a1a; }
+    </style>
+</head>
+<body>
+    <header>
+        <span style="color:var(--gold); font-weight: bold;">⚙ لوحة إدارة المخزون</span>
+        <button onclick="location.href='index.html'" style="background:none; border:1px solid white; color:white; padding:5px 15px; border-radius:8px; cursor:pointer; font-family: inherit;">الرئيسية</button>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h3 style="margin-top:0;">➕ إضافة عطر جديد</h3>
+            <div class="form-grid">
+                <input type="text" id="barcode" placeholder="الباركود (EAN-13)">
+                <input type="text" id="name" placeholder="اسم العطر">
+                <input type="text" id="brand" placeholder="الماركة">
+                <input type="text" id="category" placeholder="التصنيف">
+                <input type="number" id="cost" placeholder="سعر الشراء">
+                <input type="number" id="price" placeholder="سعر البيع">
+                <input type="number" id="quantity" placeholder="الكمية المتوفرة">
+                <input type="number" id="minStock" placeholder="الحد الأدنى للتنبيه">
+                <button class="btn-add" id="saveBtn">حفظ المنتج</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📦 قائمة المخزون</h3>
+            <div id="inventoryList">جاري تحميل البيانات...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db } from "./firebase-config.js";
+        import { collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // إضافة المنتج
+        document.getElementById("saveBtn").addEventListener("click", async () => {
+            const data = {
+                barcode: document.getElementById("barcode").value,
+                name: document.getElementById("name").value,
+                brand: document.getElementById("brand").value,
+                category: document.getElementById("category").value,
+                cost: Number(document.getElementById("cost").value),
+                price: Number(document.getElementById("price").value),
+                quantity: Number(document.getElementById("quantity").value),
+                minStock: Number(document.getElementById("minStock").value),
+                createdAt: new Date()
+            };
+
+            if(!data.name || !data.barcode) return alert("يرجى ملء الباركود والاسم على الأقل");
+
+            try {
+                await addDoc(collection(db, "perfumes"), data);
+                alert("تمت الإضافة بنجاح ✅");
+                // تفريغ الحقول
+                document.querySelectorAll("input").forEach(i => i.value = "");
+            } catch (e) {
+                alert("حدث خطأ أثناء الحفظ");
+            }
+        });
+
+        // عرض المخزون لحظياً
+        onSnapshot(query(collection(db, "perfumes"), orderBy("createdAt", "desc")), (snap) => {
+            const list = document.getElementById("inventoryList");
+            list.innerHTML = "";
+            snap.forEach(s => {
+                const p = s.data();
+                const isLow = p.quantity <= p.minStock;
+                list.innerHTML += `
+                    <div class="product-item ${isLow ? 'low-stock' : ''}">
+                        <div>
+                            <strong>${p.name} - ${p.brand}</strong><br>
+                            <small>المخزون: ${p.quantity} | السعر: ${p.price} ريال</small>
+                        </div>
+                        <button class="btn-del" onclick="deleteItem('${s.id}')">حذف</button>
+                    </div>
+                `;
+            });
+        });
+
+        window.deleteItem = async (id) => {
+            if(confirm("هل أنت متأكد من حذف هذا العطر؟")) {
+                await deleteDoc(doc(db, "perfumes", id));
+            }
+        };
+    </script>
+</body>
+</html>

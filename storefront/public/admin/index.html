@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم عطور النخبة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
+    <style>
+        :root { --gold: #d4af37; --dark: #0f0f0f; --card-bg: rgba(31, 41, 55, 0.7); }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Cairo', sans-serif; }
+        body { background: var(--dark); color: white; overflow-x: hidden; }
+        #particles { position: fixed; width: 100%; height: 100%; z-index: -1; }
+
+        header {
+            padding: 12px 4%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(212,175,55,0.25);
+            position: sticky; top: 0; z-index: 100;
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        }
+
+        .logo { color: var(--gold); font-size: 1.3rem; font-weight: 700; white-space: nowrap; }
+
+        /* ─── Tab Nav ─── */
+        nav {
+            display: flex;
+            gap: 4px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            padding: 5px;
+            flex-wrap: wrap;
+        }
+        nav a {
+            text-decoration: none;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 7px 14px;
+            border-radius: 10px;
+            transition: all 0.25s;
+            white-space: nowrap;
+            display: flex; align-items: center; gap: 5px;
+        }
+        nav a:hover { color: white; background: rgba(255,255,255,0.08); }
+        nav a.active {
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            color: #000;
+            box-shadow: 0 3px 10px rgba(212,175,55,0.3);
+        }
+
+        /* Logout */
+        #logoutBtn {
+            background: none; border: 1px solid rgba(239,68,68,0.5); color: #f87171;
+            padding: 7px 14px; border-radius: 10px; cursor: pointer; font-family: inherit;
+            font-size: 0.82rem; font-weight: 600; transition: 0.25s;
+        }
+        #logoutBtn:hover { background: rgba(239,68,68,0.15); }
+
+        .dashboard-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 20px; padding: 40px 5%; max-width: 1100px; margin: auto;
+        }
+        .stat-card {
+            background: var(--card-bg); padding: 30px; border-radius: 16px;
+            border: 1px solid rgba(212,175,55,0.12); text-align: center;
+            cursor: pointer; transition: 0.35s; backdrop-filter: blur(10px);
+        }
+        .stat-card:hover { transform: translateY(-8px); border-color: var(--gold); box-shadow: 0 12px 28px rgba(212,175,55,0.12); }
+        .stat-card h3 { color: var(--gold); margin-bottom: 10px; }
+        .stat-card i { font-size: 2.5rem; display: block; margin-bottom: 15px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+        .container { animation: fadeIn 0.6s ease; }
+    </style>
+</head>
+<body>
+    <div id="particles"></div>
+
+    <header>
+        <div class="logo">💎 عطور النخبة</div>
+        <nav id="mainNav">
+            <a href="index.html" class="active">🏠 الرئيسية</a>
+            <a href="sales.html">💰 المبيعات</a>
+            <a href="manage.html">📦 المخزون</a>
+            <a href="expenses.html">📉 المصاريف</a>
+            <a href="reports.html">📊 التقارير</a>
+        </nav>
+        <button id="logoutBtn">خروج</button>
+    </header>
+
+    <div class="container">
+        <div style="text-align: center; margin-top: 40px;">
+            <h2 style="font-size: 2rem;">مرحباً بك في لوحة الإدارة</h2>
+            <p style="color: #aaa; margin-top: 8px;">اختر القسم الذي تود العمل عليه الآن</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="stat-card" onclick="location.href='sales.html'">
+                <i>💸</i>
+                <h3>تسجيل بيع</h3>
+                <p>إتمام عملية بيع جديدة وخصمها من المخزون</p>
+            </div>
+            <div class="stat-card" onclick="location.href='manage.html'">
+                <i>📦</i>
+                <h3>إدارة المخزون</h3>
+                <p>إضافة عطور جديدة وتعديل الكميات</p>
+            </div>
+            <div class="stat-card" onclick="location.href='expenses.html'">
+                <i>📉</i>
+                <h3>المصاريف</h3>
+                <p>تسجيل الإيجار، الرواتب، والمصاريف الجانبية</p>
+            </div>
+            <div class="stat-card" onclick="location.href='reports.html'">
+                <i>📊</i>
+                <h3>التقارير المالية</h3>
+                <p>عرض الأرباح والمبيعات اليومية والشهرية</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth } from "./firebase-config.js";
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) window.location.href = "login.html";
+        });
+
+        document.getElementById("logoutBtn").onclick = () => {
+            if(confirm("هل تريد تسجيل الخروج؟")) signOut(auth);
+        };
+
+        tsParticles.load("particles", {
+            particles: {
+                number: { value: 35 },
+                color: { value: "#d4af37" },
+                move: { enable: true, speed: 0.5 },
+                size: { value: 1.5 },
+                opacity: { value: 0.3 }
+            }
+        });
+    </script>
+</body>
+</html>
